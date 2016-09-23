@@ -40,7 +40,7 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.locatio
     panel.grid.minor =   element_blank(),
     panel.margin =       unit(0.25, "lines"),
     
-    strip.background =   element_rect(fill = "black", size = 0.5),
+    strip.background =   element_rect(fill = "white", size = 1),
     strip.text.x =       element_text(),
     strip.text.y =       element_text(angle = -90),
     
