@@ -3,6 +3,7 @@ library(ggplot2)
 library(vegan)
 library(EcoSimR)
 library(dplyr)
+library(readr)
 
 
 source_url("https://raw.githubusercontent.com/collnell/R_vis/master/theme_mooney.R")#ggplot theme
@@ -10,42 +11,35 @@ source_url("https://raw.githubusercontent.com/collnell/R_vis/master/theme_mooney
 
 shinyServer(function(input,output){
   
+  
   values<-reactiveValues()
   
-  observeEvent(input$runmat,{
-
-      #generate 2 community matrices based on user inputs
-    A.spmat<-ranMatGen(aBetaRow=1, bBetaRow=1, ##set species to similar probability? #1 would make uniform probabilities
-                       aBetaCol=1, bBetaCol =1, ## detection? vs evenness?
-                       numRows=input$srA, numCols=input$eff_A, ##draws from poisson 
-                       mFill =1, abun =input$abun_A,
-                       emptyRow=FALSE, emptyCol=FALSE)
-    B.spmat<-ranMatGen(aBetaRow=1, bBetaRow=1, 
-                       aBetaCol=1, bBetaCol =1, 
-                       numRows=input$srB, numCols=input$eff_B, 
-                       mFill =1, abun =input$abun_B,
-                       emptyRow=FALSE, emptyCol=FALSE)
-    
-    
-    A.df<-as.data.frame(t(A.spmat$m))
-    A.df$plot_rich<-rowSums(A.df!=0)
-    A.df$plot_abun<-rowSums(A.df)
-    A.df$cum_sr<-cumsum(A.df$plot_rich)
-    A.df$cum_abun<-cumsum(A.df$plot_abun)
-    values$A.df<-A.df
-    
-    values$B.df<-as.data.frame(t(B.spmat$m))
+  ##generate random community matrix using ecosimr
+  test.mat<-eventReactive(input$rarefy, {#rows are sp, cols are sites
+    ranMatGen(aBetaRow=1, bBetaRow=1, 
+              aBetaCol=1, bBetaCol =1, 
+              numRows=60, numCols=50, 
+              mFill =1, abun =400,
+              emptyRow=FALSE, emptyCol=FALSE)
   })
-
-   
+  
+  
   
   output$rarefaction<-renderPlot({
-    validate(input$rarefy,"Use the controls below to define the species richness and abundance of ANIMAL TYPE for two theoretical ecological communities. Pressing 'Rarefy!' will produce a species accumulation curve for these communities based on the sampling effort")
     
-    rar.plot<-ggplot(values$A.df,aes(x=cum_abun,y=cum_sr))+geom_point(size=2)+
+    sg<-specaccum(test.mat()$m,method="rarefaction") ##run rarefaction using vegan
+    sdf<-data.frame(ind = sg$individuals,
+                    rich =sg$richness,
+                    site=sg$sites,
+                    sd=sg$sd)
+    
+    
+    rar.plot<-ggplot(sdf,aes(x=ind,y=rich))+geom_point(size=2)+
       labs(x="Individuals",y="Species Richness")+
       theme_mooney(legend.location="bottom")
+    
     rar.plot
+    
     
   })
   
