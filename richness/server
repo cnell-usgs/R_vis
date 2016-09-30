@@ -1,0 +1,36 @@
+###shiny template server
+
+library(shiny)
+library(ggplot2)
+library(vegan)
+
+
+source_url("https://raw.githubusercontent.com/collnell/R_vis/master/theme_mooney.R")#ggplot theme
+
+
+shinyServer(function(input,output){
+  
+  values<-reactiveValues(
+    obsA=input$spA*input$sampling
+    obsB=input$spB*input$sampling
+    mA<-matrix(rlnorm(obsA), ncol=input$spA, nrow=input$sampling)
+    mB<-matrix(rlnorm(obsB), ncol=input$spB, nrow=input$sampling)
+    A<-as.data.frame(mA)
+    A$num<-rowSums(A)
+    A$rich<-cumsum(A$num)
+    B<-as.data.frame(mB)
+    values$A<-A
+    values$B<-B
+
+  )
+   
+  
+  output$rarefaction<-renderPlot({
+    
+    rar.plot<-ggplot(A,aes(x=Individuals,y=Richness,color=Community))+geom_point(size=2)+
+      labs(x="Individuals",y="Species Richness")+
+      theme_mooney(legend.location="bottom")
+    
+  })
+  
+})
