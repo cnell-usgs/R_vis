@@ -1,0 +1,51 @@
+##shiny template ui
+#row-based layout using shiny dashboard
+
+library(shinydashboard)
+
+sidebar <- dashboardSidebar(
+  sidebarMenu(
+    menuItem("Species Richness",tabName="sprich",icon=icon("bird",lib="glyphicon")),
+    menuItem("test",tabName="test"),br()
+  ) 
+)
+
+body <- dashboardBody(
+  tabItems(
+    tabItem(tabName="sprich",
+            fluidRow(
+              column(width=8,
+                box(title = "Comparing Species Richness",width=NULL,
+                    plotOutput("rarefaction")
+                ),
+                box(title = "Communities",solidHeader = TRUE,width=NULL,
+                    column(width=6,
+                      sliderInput("spA","Species Richness A",min=0,max=100,round=TRUE,value=25,width=200),
+                      sliderInput("spB","Species Richness B",min=0,max=100,round=TRUE,value=45,width=200)),
+                    column(width=6,
+                      sliderInput("abunA","Abundance A",min=0,max=500,round=TRUE,value=150,width=200),
+                      sliderInput("abunB","Abundance B",min=0,max=500,round=TRUE,value=250,width=200),
+                      sliderInput("sampling","Sampling Effort",min=0,max=100,round=TRUE,value=90,width=200))
+                )
+              ),
+              column(width=4,
+                tabBox(id = "interextra",width=NULL,
+                       tabPanel("Interpolate"),
+                       tabPanel("Extrapolate")
+                      ),
+                box(title="What is species richness?", width=NULL
+                )
+              )
+            )
+          ),
+    tabItem(tabName="test",
+            h2("tab2 content")
+    )
+  )
+)
+# Put them together into a dashboardPage
+dashboardPage(skin = "purple",
+              dashboardHeader(title = "Measuring Species Richness"),
+              sidebar,
+              body
+)
