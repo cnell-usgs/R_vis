@@ -1,3 +1,4 @@
+
 library(shiny)
 library(ggplot2)
 library(vegan)
@@ -15,28 +16,50 @@ shinyServer(function(input,output){
   values<-reactiveValues()
   
   ##generate random community matrix using ecosimr
-  test.mat<-eventReactive(input$rarefy, {#rows are sp, cols are sites
+  test.matA<-eventReactive(input$rarefy, {#rows are sp, cols are sites
     ranMatGen(aBetaRow=1, bBetaRow=1, 
               aBetaCol=1, bBetaCol =1, 
-              numRows=60, numCols=50, 
-              mFill =1, abun =400,
+              numRows=input$srA, numCols=input$eff_A, 
+              mFill =1, abun =input$abun_A,
+              emptyRow=FALSE, emptyCol=FALSE)
+  })
+  test.matB<-eventReactive(input$rarefy, {#rows are sp, cols are sites
+    ranMatGen(aBetaRow=1, bBetaRow=1, 
+              aBetaCol=1, bBetaCol =1, 
+              numRows=input$srB, numCols=input$eff_B, 
+              mFill =1, abun =input$abun_B,
               emptyRow=FALSE, emptyCol=FALSE)
   })
   
   
   
   output$rarefaction<-renderPlot({
+    validate(
+      need(input$rarefy,"Use the controls below to define the species richness and abundance for two hypothetical ecological communities. 
+           Use the 'sampling effort' sliders to set the number of simulated observations or samples for each community. Pressing 
+           'Rarefy!' will generate an individual-based rarefaction curve based on your inputs.")
+    )
+    sgA<-specaccum(t(test.matA()$m),method="rarefaction") ##run rarefaction using vegan
+    sdfA<-data.frame(ind = sgA$individuals,
+                    rich =sgA$richness,
+                    site=sgA$sites,
+                    sd=sgA$sd)
+    sdfA$Community<-rep("A",length(sdfA$ind))
+    sgB<-specaccum(t(test.matB()$m),method="rarefaction") ##run rarefaction using vegan
+    sdfB<-data.frame(ind = sgB$individuals,
+                    rich =sgB$richness,
+                    site=sgB$sites,
+                    sd=sgB$sd)
+    sdfB$Community<-rep("B",length(sdfB$ind))
     
-    sg<-specaccum(test.mat()$m,method="rarefaction") ##run rarefaction using vegan
-    sdf<-data.frame(ind = sg$individuals,
-                    rich =sg$richness,
-                    site=sg$sites,
-                    sd=sg$sd)
+    plot.df<-rbind(sdfA,sdfB)
+      
     
-    
-    rar.plot<-ggplot(sdf,aes(x=ind,y=rich))+geom_point(size=2)+
-      labs(x="Individuals",y="Species Richness")+
-      theme_mooney(legend.location="bottom")
+    rar.plot<-ggplot(plot.df,aes(x=ind,y=rich,color=Community))+geom_line(size=2)+##need to add CI shaded around line
+      labs(x="Individuals",y="Species Richness")+##make smooth line?
+      theme_mooney(legend.location="bottom")+
+      geom_ribbon(aes(x=ind,ymin=rich-sd,ymax=rich+sd,fill=Community),alpha=.5,inherit.aes = FALSE)+##incorrect way to plot sd/CI
+      scale_color_manual(values=c("#48233C","#79B791"))+scale_fill_manual(values=c("#48233C","#79B791"))
     
     rar.plot
     
