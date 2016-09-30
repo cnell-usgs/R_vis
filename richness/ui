@@ -2,8 +2,8 @@ library(shinydashboard)
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Species Richness",tabName="sprich",icon=icon("bird",lib="glyphicon")),
-    menuItem("Literature",tabName="lit",icon=icon("book", lib="glyphicon")),br(),br()
+    menuItem("Species Richness",tabName="sprich",icon=icon("fishes",lib="glyphicon")),
+    menuItem("Learn More",tabName="lit",icon=icon("book", lib="glyphicon")),br(),br()
     
   ) 
 )
@@ -16,16 +16,16 @@ body <- dashboardBody(
                      box(title = "Species Accumulation Curve",width=NULL,
                          plotOutput("rarefaction")
                      ),
-                     box(title = "Communities",solidHeader = TRUE,width=NULL,
+                     box(title = "Community Metrics",solidHeader = TRUE,width=NULL,
                          column(width=4,
-                                sliderInput("srA","Species Richness A",min=0,max=100,round=TRUE,value=25,width=200),
-                                sliderInput("srB","Species Richness B",min=0,max=100,round=TRUE,value=45,width=200)),
+                                sliderInput("srA","Species Richness A",min=0,max=100,round=TRUE,value=25,width=200,ticks=FALSE),
+                                sliderInput("srB","Species Richness B",min=0,max=100,round=TRUE,value=45,width=200,ticks=FALSE)),
                          column(width=4,
-                                sliderInput("abun_A","Abundance A",min=0,max=500,round=TRUE,value=150,width=200),
-                                sliderInput("abun_B","Abundance B",min=0,max=500,round=TRUE,value=250,width=200)),
+                                sliderInput("abun_A","Abundance A",min=0,max=500,round=TRUE,value=150,width=200,ticks=FALSE),
+                                sliderInput("abun_B","Abundance B",min=0,max=500,round=TRUE,value=250,width=200,ticks=FALSE)),
                          column(width=4,
-                                sliderInput("eff_A","Sampling Effort A",min=0,max=300,round=TRUE,value=90,width=200),
-                                sliderInput("eff_B","Sampling Effort B",min=0,max=300,round=TRUE,value=90,width=200),
+                                sliderInput("eff_A","Sampling Effort A",min=0,max=300,round=TRUE,value=90,width=200,ticks=FALSE,post=" samples"),
+                                sliderInput("eff_B","Sampling Effort B",min=0,max=300,round=TRUE,value=90,width=200,ticks=FALSE,post=" samples"),
                                 actionButton("rarefy","Rarefy!"),br())
                      )
               ),
@@ -48,8 +48,33 @@ body <- dashboardBody(
               )
             )
     ),
-    tabItem(tabName="test",
-            h2("tab2 content")
+    tabItem(tabName="lit",
+            fluidRow(
+              column(width=6,
+                     box(title="Publications",width=NULL,
+                         p("Gotelli, N.J., Colwell, R.K. 2010. Biological diversity: frontiers in measurement and assessment. A. E. Magurran and B. J. McGill, eds. pages 39-54"),
+                         a("See pdf", href="http://www.uvm.edu/~ngotelli/manuscriptpdfs/Chapter%204.pdf",target="_blank"))),
+              column(width=6,
+                     box(title="R packages",width=NULL,
+                         p("There are several R packages that have been developed to compare species richness, among many other functions.
+                           The following packages were used in developing this application."),
+                         h4("vegan"),
+                         p("Ordination methods, diversity analysis and other functions for community and vegetation ecologists."),
+                         a("Documentation",href="https://cran.r-project.org/web/packages/vegan/vegan.pdf",target="_blank"),
+                         h4("iNEXT"),
+                         p("Interpolation and Extrapolation for Species Diversity"),
+                         a("Documentation",href="https://cran.r-project.org/web/packages/iNEXT/iNEXT.pdf",target="_blank"),
+                         h4("EcoSimR"),
+                         p("Used in this app to generate null community matrices"),
+                         a("Website",href="http://ecosimr.org/",target="_blank"),br(),
+                         a("Documentation",href="https://cran.r-project.org/web/packages/EcoSimR/EcoSimR.pdf",target="_blank"),br(),
+                         h4("This app:"),
+                         p("R script that runs the same analyses:"),br(),
+                         a(href="",target="_blank"),br(),
+                         a("Click here to see code that produces this application",href="https://github.com/collnell/R_vis/tree/master/richness",target="_blank")
+                         )
+                     )
+            )
     )
   )
 )
@@ -58,4 +83,5 @@ dashboardPage(skin = "purple",
               dashboardHeader(title = "Measuring Species Richness"),
               sidebar,
               body
+)
 )
