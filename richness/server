@@ -36,9 +36,7 @@ shinyServer(function(input,output){
   
   output$rarefaction<-renderPlot({
     validate(
-      need(input$rarefy,"Use the controls below to define the species richness and abundance for two hypothetical ecological communities. 
-      Use the 'sampling effort' sliders to set the number of simulated observations or samples for each community. Pressing 
-      'Rarefy!' will generate an individual-based rarefaction curve based on your inputs.")
+      need(input$rarefy,"Set community metric and press 'Rarefy!' to show species accumulation curve")
     )
     sgA<-specaccum(t(test.matA()$m),method="rarefaction") ##run rarefaction using vegan
     sdfA<-data.frame(ind = sgA$individuals, #create dataframe to plot 
@@ -62,13 +60,19 @@ shinyServer(function(input,output){
     rar.plot<-ggplot(data=plot.df,aes(x=ind,y=rich,color=Community))+geom_line(size=2)+##need to add CI shaded around line
       labs(x="Individuals",y="Species Richness")+##make smooth line?
       theme_mooney(legend.location="bottom")+
-      geom_ribbon(aes(x=ind,ymin=rich-sd,ymax=rich+sd,fill=Community),alpha=.6,inherit.aes = FALSE)+##incorrect way to plot sd/CI
-      scale_color_manual(values=c("#48233C","#79B791"))+scale_fill_manual(values=c("#48233C","#79B791"))+
-      geom_line(y=SRestA$chao,lty="dashed",size=1.5,color="#48233C")+
-      geom_line(y=SRestB$chao,lty="dotted",size=1.5,color="#79B791")+
-      geom_ribbon(aes(x=ind,ymin=SRestA$chao-SRestA$chao.se,ymax=SRestA$chao+SRestA$chao.se),fill="#48233C",alpha=.2,inherit.aes=FALSE)+
-      geom_ribbon(aes(x=ind,ymin=SRestB$chao-SRestB$chao.se,ymax=SRestB$chao+SRestB$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)
+      geom_ribbon(aes(x=ind,ymin=rich-sd,ymax=rich+sd,fill=Community),alpha=.4,inherit.aes = FALSE)+##incorrect way to plot sd/CI
+      scale_color_manual(values=c("darkgoldenrod3","#79B791"))+scale_fill_manual(values=c("darkgoldenrod3","#79B791"))
     rar.plot
+    
+    if (input$chao2 == TRUE) {
+      chao.rar<-rar.plot+geom_line(y=SRestA$chao,lty="dashed",size=1.5,color="darkgoldenrod3")+
+        geom_line(y=SRestB$chao,lty="dotted",size=1.5,color="#79B791")+
+        geom_ribbon(aes(x=ind,ymin=SRestA$chao-SRestA$chao.se,ymax=SRestA$chao+SRestA$chao.se),fill="darkgoldenrod3",alpha=.2,inherit.aes=FALSE)+
+        geom_ribbon(aes(x=ind,ymin=SRestB$chao-SRestB$chao.se,ymax=SRestB$chao+SRestB$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)
+      chao.rar
+    } else {
+      rar.plot
+    }
     
     
   })
