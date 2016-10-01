@@ -46,7 +46,7 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.locatio
     
     plot.background =    element_rect(colour = "white"),
     plot.title =         element_text(size = rel(1.2)),
-    plot.margin =        unit(c(1, 1, 1, 1), "lines"),
+    plot.margin =        element_blank(),
     
     complete = TRUE
   )
