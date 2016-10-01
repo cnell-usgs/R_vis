@@ -1,3 +1,4 @@
+###shiny template server
 
 library(shiny)
 library(ggplot2)
@@ -36,11 +37,11 @@ shinyServer(function(input,output){
   output$rarefaction<-renderPlot({
     validate(
       need(input$rarefy,"Use the controls below to define the species richness and abundance for two hypothetical ecological communities. 
-           Use the 'sampling effort' sliders to set the number of simulated observations or samples for each community. Pressing 
-           'Rarefy!' will generate an individual-based rarefaction curve based on your inputs.")
+      Use the 'sampling effort' sliders to set the number of simulated observations or samples for each community. Pressing 
+      'Rarefy!' will generate an individual-based rarefaction curve based on your inputs.")
     )
     sgA<-specaccum(t(test.matA()$m),method="rarefaction") ##run rarefaction using vegan
-    sdfA<-data.frame(ind = sgA$individuals,
+    sdfA<-data.frame(ind = sgA$individuals, #create dataframe to plot 
                     rich =sgA$richness,
                     site=sgA$sites,
                     sd=sgA$sd)
@@ -50,17 +51,23 @@ shinyServer(function(input,output){
                     rich =sgB$richness,
                     site=sgB$sites,
                     sd=sgB$sd)
-    sdfB$Community<-rep("B",length(sdfB$ind))
+    sdfB$Community<-rep("B",length(sdfB$ind))#create community variable for plotting
     
-    plot.df<-rbind(sdfA,sdfB)
-      
+    plot.df<-rbind(sdfA,sdfB)#plotting values for rarefaction curve
+    est.df<-rbind(sdfA,sdfB)
     
-    rar.plot<-ggplot(plot.df,aes(x=ind,y=rich,color=Community))+geom_line(size=2)+##need to add CI shaded around line
+    SRestA<-specpool(t(test.matA()$m))  #estimate species richness
+    SRestB<-specpool(t(test.matB()$m))
+    
+    rar.plot<-ggplot(data=plot.df,aes(x=ind,y=rich,color=Community))+geom_line(size=2)+##need to add CI shaded around line
       labs(x="Individuals",y="Species Richness")+##make smooth line?
       theme_mooney(legend.location="bottom")+
-      geom_ribbon(aes(x=ind,ymin=rich-sd,ymax=rich+sd,fill=Community),alpha=.5,inherit.aes = FALSE)+##incorrect way to plot sd/CI
-      scale_color_manual(values=c("#48233C","#79B791"))+scale_fill_manual(values=c("#48233C","#79B791"))
-    
+      geom_ribbon(aes(x=ind,ymin=rich-sd,ymax=rich+sd,fill=Community),alpha=.6,inherit.aes = FALSE)+##incorrect way to plot sd/CI
+      scale_color_manual(values=c("#48233C","#79B791"))+scale_fill_manual(values=c("#48233C","#79B791"))+
+      geom_line(y=SRestA$chao,lty="dashed",size=1.5,color="#48233C")+
+      geom_line(y=SRestB$chao,lty="dotted",size=1.5,color="#79B791")+
+      geom_ribbon(aes(x=ind,ymin=SRestA$chao-SRestA$chao.se,ymax=SRestA$chao+SRestA$chao.se),fill="#48233C",alpha=.2,inherit.aes=FALSE)+
+      geom_ribbon(aes(x=ind,ymin=SRestB$chao-SRestB$chao.se,ymax=SRestB$chao+SRestB$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)
     rar.plot
     
     
