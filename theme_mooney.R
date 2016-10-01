@@ -5,7 +5,7 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.locatio
     rect =               element_rect(fill = "white", colour = "white", size = 0.5, linetype = 1),
     text =               element_text(family = base_family, face = "plain", colour = "black",
                                       size = base_size, hjust = 0.5, vjust = 0.5, angle = 0,
-                                      lineheight = 0.9, margin=margin(0), debug=FALSE),
+                                      lineheight = 0.9, margin=margin(), debug=FALSE),
     axis.text =          element_text(size = rel(0.8), colour = "black"),
     strip.text =         element_text(size = rel(0.8)),
     
