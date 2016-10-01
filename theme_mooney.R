@@ -38,7 +38,7 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.locatio
     panel.border =       element_blank(),
     panel.grid.major =   element_blank(),
     panel.grid.minor =   element_blank(),
-    panel.margin =       unit(0.25, "lines"),
+    panel.margin =       elemnt_blank(),
     
     strip.background =   element_rect(fill = "white", size = 1),
     strip.text.x =       element_text(),
