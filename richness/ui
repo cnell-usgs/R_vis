@@ -80,8 +80,7 @@ body <- dashboardBody(
 )
 # Put them together into a dashboardPage
 dashboardPage(skin = "purple",
-              dashboardHeader(title = "Measuring Species Richness"),
+              dashboardHeader(title = "Measuring Species Richness", titleWidth=350),
               sidebar,
               body
-)
 )
