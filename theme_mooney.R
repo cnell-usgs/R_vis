@@ -38,15 +38,15 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.locatio
     panel.border =       element_blank(),
     panel.grid.major =   element_blank(),
     panel.grid.minor =   element_blank(),
-    panel.margin =       element_blank(),
+    panel.margin =       unit(0.25, "lines"),
     
-    strip.background =   element_rect(fill = "white", size = 1),
+    strip.background =   element_rect(fill = "black", size = 0.5),
     strip.text.x =       element_text(),
     strip.text.y =       element_text(angle = -90),
     
     plot.background =    element_rect(colour = "white"),
     plot.title =         element_text(size = rel(1.2)),
-    plot.margin =        element_blank(),
+    plot.margin =        unit(c(1, 1, 1, 1), "lines"),
     
     complete = TRUE
   )
