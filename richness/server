@@ -1,5 +1,3 @@
-###shiny template server
-
 library(shiny)
 library(ggplot2)
 library(vegan)
@@ -7,6 +5,7 @@ library(EcoSimR)
 library(dplyr)
 library(readr)
 library(rich)
+
 
 source_url("https://raw.githubusercontent.com/collnell/R_vis/master/theme_mooney.R")#ggplot theme
 birds<-read.csv("https://raw.githubusercontent.com/collnell/R_vis/master/richness/example/birds.csv")
@@ -25,18 +24,18 @@ shinyServer(function(input,output){
   
   ##generate random community matrix using ecosimr
   test.matA<-eventReactive(input$rarefy, {#rows are sp, cols are sites
-    ranMatGen(aBetaRow=1, bBetaRow=1, 
-              aBetaCol=1, bBetaCol =1, 
+    ranMatGen(aBetaRow=input$eff_A+1, bBetaRow=2, 
+              aBetaCol=input$eff_A+1, bBetaCol =2, 
               numRows=input$srA, numCols=input$eff_A, 
-              mFill =.1, abun =input$abun_A,
-              emptyRow=FALSE, emptyCol=FALSE)
+              mFill =.3, abun =input$abun_A,
+              emptyRow=TRUE, emptyCol=TRUE)
   })
   test.matB<-eventReactive(input$rarefy, {#rows are sp, cols are sites
-    ranMatGen(aBetaRow=1, bBetaRow=1, 
-              aBetaCol=1, bBetaCol =1, 
+    ranMatGen(aBetaRow=input$eff_B+1, bBetaRow=2, 
+              aBetaCol=input$eff_B+1, bBetaCol =2, 
               numRows=input$srB, numCols=input$eff_B, 
-              mFill =.1, abun =input$abun_B,
-              emptyRow=FALSE, emptyCol=FALSE)
+              mFill =.3, abun =input$abun_B,
+              emptyRow=TRUE, emptyCol=TRUE)
   })
   
   
@@ -101,8 +100,8 @@ shinyServer(function(input,output){
     if (input$chao2 == TRUE) {
       chao.rar<-rar.plot+geom_line(y=SRestA$chao,lty="dashed",size=1.5,color="darkgoldenrod3")+
         geom_line(y=SRestB$chao,lty="dotted",size=1.5,color="#79B791")+
-        geom_ribbon(aes(x=ind,ymin=SRestA$chao-SRestA$chao.se,ymax=SRestA$chao+SRestA$chao.se),fill="darkgoldenrod3",alpha=.2,inherit.aes=FALSE)+
-        geom_ribbon(aes(x=ind,ymin=SRestB$chao-SRestB$chao.se,ymax=SRestB$chao+SRestB$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)+
+        geom_ribbon(aes(x=xvary,ymin=SRestA$chao-SRestA$chao.se,ymax=SRestA$chao+SRestA$chao.se),fill="darkgoldenrod3",alpha=.2,inherit.aes=FALSE)+
+        geom_ribbon(aes(x=xvary,ymin=SRestB$chao-SRestB$chao.se,ymax=SRestB$chao+SRestB$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)+
         geom_text(aes(x=0, y=SRestA$chao, label=round(Aest,2)),color="black",size=5)+
         geom_text(aes(x=0, y=SRestB$chao, label=round(Best,2)),color="black",size=5)#labels are blurry
       chao.rar
@@ -114,6 +113,13 @@ shinyServer(function(input,output){
     
     
     ##working on the exmaple tab
+  
+  output$richests<-renderPrint({
+    levels(birds$DIVERSITY)<-c("Monoculture","Polyulture")
+    all.est<-specpool(birds[,-2],birds[,1])  #estimate species richness
+    all.est
+    
+  })
   output$divplots<-renderPlot({
     mono.rar<-specaccum(monom,method="rarefaction")
     poly.rar<-specaccum(polym,method="rarefaction")
@@ -125,8 +131,8 @@ shinyServer(function(input,output){
                         rich =poly.rar$richness,
                         site=poly.rar$sites,
                         sd=poly.rar$sd)
-    mono.df$Community<-rep("M",length(mono.df$ind))
-    poly.df$Community<-rep("P",length(poly.df$ind))
+    mono.df$Community<-rep("Monoculture",length(mono.df$ind))
+    poly.df$Community<-rep("Polyculture",length(poly.df$ind))
     div.df<-rbind(mono.df,poly.df)
     
     m.est<-specpool(monom)  #estimate species richness
