@@ -1,16 +1,3 @@
-###shiny template server
-
-library(shiny)
-library(ggplot2)
-library(vegan)
-library(EcoSimR)
-library(dplyr)
-library(readr)
-
-
-source_url("https://raw.githubusercontent.com/collnell/R_vis/master/theme_mooney.R")#ggplot theme
-
-
 shinyServer(function(input,output){
   
   
@@ -21,14 +8,14 @@ shinyServer(function(input,output){
     ranMatGen(aBetaRow=1, bBetaRow=1, 
               aBetaCol=1, bBetaCol =1, 
               numRows=input$srA, numCols=input$eff_A, 
-              mFill =1, abun =input$abun_A,
+              mFill =.1, abun =input$abun_A,
               emptyRow=FALSE, emptyCol=FALSE)
   })
   test.matB<-eventReactive(input$rarefy, {#rows are sp, cols are sites
     ranMatGen(aBetaRow=1, bBetaRow=1, 
               aBetaCol=1, bBetaCol =1, 
               numRows=input$srB, numCols=input$eff_B, 
-              mFill =1, abun =input$abun_B,
+              mFill =.1, abun =input$abun_B,
               emptyRow=FALSE, emptyCol=FALSE)
   })
   
@@ -38,24 +25,43 @@ shinyServer(function(input,output){
     validate(
       need(input$rarefy,"Set community metric and press 'Rarefy!' to show species accumulation curve")
     )
-    sgA<-specaccum(t(test.matA()$m),method="rarefaction") ##run rarefaction using vegan
-    sdfA<-data.frame(ind = sgA$individuals, #create dataframe to plot 
-                    rich =sgA$richness,
-                    site=sgA$sites,
-                    sd=sgA$sd)
-    sdfA$Community<-rep("A",length(sdfA$ind))
-    sgB<-specaccum(t(test.matB()$m),method="rarefaction") ##run rarefaction using vegan
-    sdfB<-data.frame(ind = sgB$individuals,
-                    rich =sgB$richness,
-                    site=sgB$sites,
-                    sd=sgB$sd)
-    sdfB$Community<-rep("B",length(sdfB$ind))#create community variable for plotting
+    if(is.null(input$getcsv)) {
+      
+      sgA<-specaccum(t(test.matA()$m),method="rarefaction") ##run rarefaction using vegan
+      sgB<-specaccum(t(test.matB()$m),method="rarefaction") ##
+    } else{
+      inFile<-input$getcsv
+      temp.df<-read.csv(inFile$datapath)##needs to sites x species matrix, with 1st col as grouping var
+      temp.df[is.na(temp.df)]<-0
+      X<-split(temp.df,as.factor(temp.df[,1]))
+      adf<-X[[1]]
+      adrun<-adf[-1]
+      bdf<-X[[2]]
+      bdrun<-bdf[-1]
+      sgA<-specaccum(adrun,method="rarefaction")
+      sgB<-specaccum(bdrun,method="rarefaction")
+      
+    }
     
-    plot.df<-rbind(sdfA,sdfB)#plotting values for rarefaction curve
-    est.df<-rbind(sdfA,sdfB)
-    
-    SRestA<-specpool(t(test.matA()$m))  #estimate species richness
-    SRestB<-specpool(t(test.matB()$m))
+      sdfA<-data.frame(ind = sgA$individuals, #create dataframe to plot 
+                      rich =sgA$richness,
+                      site=sgA$sites,
+                      sd=sgA$sd)
+      sdfA$Community<-rep("A",length(sdfA$ind))
+      sdfB<-data.frame(ind = sgB$individuals,
+                      rich =sgB$richness,
+                      site=sgB$sites,
+                      sd=sgB$sd)
+      sdfB$Community<-rep("B",length(sdfB$ind))#create community variable for plotting
+      
+      plot.df<-rbind(sdfA,sdfB)#plotting values for rarefaction curve
+      est.df<-rbind(sdfA,sdfB)
+      
+      SRestA<-specpool(t(test.matA()$m))  #estimate species richness
+      SRestB<-specpool(t(test.matB()$m))
+      Aest<-SRestA$chao
+      Best<-SRestB$chao
+
     
     rar.plot<-ggplot(data=plot.df,aes(x=ind,y=rich,color=Community))+geom_line(size=2)+##need to add CI shaded around line
       labs(x="Individuals",y="Species Richness")+##make smooth line?
@@ -68,7 +74,9 @@ shinyServer(function(input,output){
       chao.rar<-rar.plot+geom_line(y=SRestA$chao,lty="dashed",size=1.5,color="darkgoldenrod3")+
         geom_line(y=SRestB$chao,lty="dotted",size=1.5,color="#79B791")+
         geom_ribbon(aes(x=ind,ymin=SRestA$chao-SRestA$chao.se,ymax=SRestA$chao+SRestA$chao.se),fill="darkgoldenrod3",alpha=.2,inherit.aes=FALSE)+
-        geom_ribbon(aes(x=ind,ymin=SRestB$chao-SRestB$chao.se,ymax=SRestB$chao+SRestB$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)
+        geom_ribbon(aes(x=ind,ymin=SRestB$chao-SRestB$chao.se,ymax=SRestB$chao+SRestB$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)+
+        geom_text(aes(x=0, y=SRestA$chao, label=round(Aest,2)),color="black",size=5)+
+        geom_text(aes(x=0, y=SRestB$chao, label=round(Best,2)),color="black",size=5)#labels are blurry
       chao.rar
     } else {
       rar.plot
@@ -77,4 +85,5 @@ shinyServer(function(input,output){
     
   })
   
+})
 })
