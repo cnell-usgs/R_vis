@@ -19,8 +19,8 @@ body <- dashboardBody(
                      box(title="Measuring species richness", width=NULL,collapsible = TRUE,collapsed=TRUE,
                          p("Species richness is the total number of unique species in a defined area. Measuring species richness is a core
                            objective of ecological research and conservation, and provides a foundation for understanding biodiversity."),
-                         p("This application demonstrates how species richness can be compared between two sites that differ in the number of 
-                           individuals and sampling effort. DESCRIBE SAC HERE? key words- cumulative sr, ind")),
+                         p("This application demonstrates how species richness is estimated and compared between two sites that differ in the number of 
+                           individuals and sampling effort.")),
                      box(title = "Community Metrics",solidHeader = TRUE,width=NULL,
                          p("Use the sliders to set the species richness of two hypothetical communities. Pressing 'Rarefy!' will generate a species accumulation curve
                            showing the number of new species observed in the communities (y-axis), with increasing individuals or sampling effort (x-axis)."),
@@ -47,28 +47,30 @@ body <- dashboardBody(
                                 sliderInput("abun_B","Individuals",min=0,max=300,round=TRUE,value=50,width=200,ticks=FALSE),
                                 sliderInput("eff_B","Sampling Effort",min=0,max=200,round=TRUE,value=50,width=200,ticks=FALSE,post=" samples")),
                          p("Or, upload a .'csv' file that contains a sample x species matrix of species abundances for 2 communities. The first column of the data file must
-                           be the grouping variable to indicate the 2 communities. Note: Sliders will not work with uploaded data."),
+                           be the grouping variable to indicate the 2 communities."),
                          fileInput("getcsv","Upload data",multiple=FALSE,accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))
                      ),
                      box(title="Evenness",width=NULL,collapsible = TRUE,
-                         p("Species evenness, or the relative abundance of species, affects the number of species observed by sampling.
-                           If all species are present in the community in equal proportion (even), the likelihood of observing each is similar and thus more species
+                         p("Species evenness, or the relative abundance of species, affects the number of species observed via sampling.
+                           If all species are present in the community in equal proportion, the likelihood of observing each is similar and thus more species
                            may be detected with lower sampling effort. However, if species abundances are highly uneven (a few common species and many rare ones, for example) 
                            most individuals observed will be of common species rather than rare ones which may go undetected. Use the sliders to see how species evenness
-                           implicates the species accumulation curve. (0 = uneven, 1 = all species equally common)"),
+                           implicates the species accumulation curve."),
+                         p("(0 = uneven, 1 = all species equally common)"),
                          column(width=6,
                                 tags$style(HTML(".js-irs-6 .irs-single, .js-irs-6 .irs-bar-edge, .js-irs-6 .irs-bar {background: #CD950C}")),
                                 tags$style(HTML(".js-irs-7 .irs-single, .js-irs-7 .irs-bar-edge, .js-irs-7 .irs-bar {background: #79B791}")),
-                                sliderInput("evennessA","Community A:",min=0,max=1,value=1,ticks=FALSE,width=200)),
+                                sliderInput("evennessA","A:",min=0,max=1,value=1,ticks=FALSE,width=200)),
                          column(width=6,
-                                sliderInput("evennessB","Community B:",min=0,max=1,value=1,ticks=FALSE,width=200))
+                                sliderInput("evennessB","B:",min=0,max=1,value=1,ticks=FALSE,width=200))
                      )##mouse over sampling effort that defines it- can be the number of smaples/observations to the amount of area surveyed or total time.
                      #depending on the taxa of interest, the degree of sampling effort and methodlogy will vary
                          ),
               column(width=8,
                      box(title = "Species Accumulation Curve",width=NULL,
                          plotOutput("rarefaction"),
-                         p("Put words here that explain plot interpretation?")
+                         p(""),
+                         radioButtons("xvar","Change x-axis:",choices=c("Individual-based rarefaction curve"="ind","Sample-based rarefaciton curve"="site"),selected="ind")
                      ),
                      column(width=6,
                             box(title="Estimating total species richness",width=NULL, collapsible=TRUE,
@@ -104,15 +106,15 @@ body <- dashboardBody(
                          a("See pdf", href="http://www.uvm.edu/~ngotelli/manuscriptpdfs/Chapter%204.pdf",target="_blank"))),
               column(width=6,
                      box(title="R packages",width=NULL,
-                         p("There are several R packages that have been developed to compare species richness, among many other functions.
-                           The following packages were used in developing this application."),
+                         p("Several R packages have been developed for comparing, extrapolating, and estimating species richness.
+                           The following were used in the development of this app."),
                          h4("vegan"),
                          p("Ordination methods, diversity analysis and other functions for community and vegetation ecologists."),
                          a("Documentation",href="https://cran.r-project.org/web/packages/vegan/vegan.pdf",target="_blank"),
                          h4("iNEXT"),
                          p("Interpolation and Extrapolation for Species Diversity"),
-                         a("Documentation",href="https://cran.r-project.org/web/packages/iNEXT/iNEXT.pdf",target="_blank"),
-                         a("Introduction Guide to iNEXT",href="https://cran.r-project.org/web/packages/iNEXT/vignettes/Introduction.html",target="_blank"),
+                         a("Documentation",href="https://cran.r-project.org/web/packages/iNEXT/iNEXT.pdf",target="_blank"),br(),
+                         a("Intro Guide to iNEXT",href="https://cran.r-project.org/web/packages/iNEXT/vignettes/Introduction.html",target="_blank"),
                          h4("EcoSimR"),
                          p("Gotelli, N.J., Hart, E., and A.M. Ellison. 2015. EcoSimR. Version 0.1.0. http://www.uvm.edu/~ngotelli/EcoSim/EcoSim.html"),
                          p("Used in this app to generate null community matrices"),
@@ -120,11 +122,14 @@ body <- dashboardBody(
                          a("Documentation",href="https://cran.r-project.org/web/packages/EcoSimR/EcoSimR.pdf",target="_blank"),br(),
                          h4("rich"),
                          p("An R package to analyze species richness"),
-                         a("Introduction to rich",href=""),
-                         h4("This app:"),
-                         p("R script that runs the same analyses:"),br(),
+                         a("Introduction to rich",href="")),
+                     box(title="This app", solidHeader=TRUE,status="warning",width=NULL,
+                         p("This app was made by",a("Colleen Nell",href="www.collnell.com",target="_blank"),"with support from the", a("UCI Data Science Initiative summer fellowship (2016)",
+                                                                                                                href="http://datascience.uci.edu/2016/06/27/2016-data-science-summer-fellow/",target="_blank")),
+                         p("Get R script for these analyses:"),br(),
                          a(href="",target="_blank"),br(),
-                         a("Click here to see code that produces this application",href="https://github.com/collnell/R_vis/tree/master/richness",target="_blank")
+                         p("If you are new to R, check out this",a("Intro to R cookbook for Ecologists",href="http://rpubs.com/mooneyk/213152",target="_blank")),
+                         a("See code for application",href="https://github.com/collnell/R_vis/tree/master/richness",target="_blank")
                          )
                      )
             )
@@ -132,7 +137,36 @@ body <- dashboardBody(
     tabItem(tabName="exercises",
             p("content here")),
     tabItem(tabName="example",
-            p("Content here"))
+            fluidRow(
+              column(width=5,
+                     box(title="Experimental Design",width=NULL,
+                     p("The data visualized are from bird surveys conducted in the Yucatan peninsula of Mexico. 15-minute surveys were conducted, recording
+                       the number of individuals and species observed. Surveys were conducted in plots that contained either 1 tree species 
+                       (monoculture) or 4 tree species (polyculture)."),br(),
+                     p("Question: does tree diversity (monoculture vs polyculture) had an effect on the species richness 
+                       of birds."),
+                     p("Hypothesis: polyculture plots contain more species of birds")
+                     ), ##incldue plot images
+                     box(title="title here",width=NULL)
+            ),
+              column(width=7,
+                     box(title="Bird species richness in tree monoculture and polycultures",width=NULL,
+                         plotOutput("divplots"),br(),
+                         radioButtons("xvar_ex","Change x-axis:",choices=c("Individual-based rarefaction curve"="ind","Sample-based rarefaciton curve"="site"),selected="ind")
+                         ),
+                     column(width=6,
+                            box(title="Estimate Bird Species Richness",width=NULL,
+                                p("I will put a diversity estimate table here"),br(),br(),
+                                checkboxInput("chao","Show estimated species richness (+/- SE)", value=FALSE)
+                                )),
+                     column(width=6,
+                            box(title="Comparing Bird Richness",width=NULL,
+                                p("Talk about comparing- takeaway etc")))
+                    
+                     )
+            )
+    )
+    
     
   )
 )
