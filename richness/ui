@@ -1,8 +1,12 @@
+library(shinydashboard)
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Species Richness",tabName="sprich",icon=icon("fishes",lib="glyphicon")),
-    menuItem("Learn More",tabName="lit",icon=icon("book", lib="glyphicon")),br(),br()
+    menuItem("Species Richness",tabName="sprich",icon=icon("star",lib="glyphicon")),
+    menuItem("Example",tabName="example",icon=icon("twitter", lib="font-awesome")),
+    menuItem("Exercises",tabName="exercises",icon=icon("line-chart", lib="font-awesome")),
+    menuItem("Learn More",tabName="lit",icon=icon("book", lib="glyphicon"))
+    ,br(),br()
     
   ) 
 )
@@ -11,76 +15,91 @@ body <- dashboardBody(
   tabItems(
     tabItem(tabName="sprich",
             fluidRow(
-              column(width=8,
-                     box(title = "Species Accumulation Curve",width=NULL,
-                         plotOutput("rarefaction")
-                     ),
-                     box(title = "Community Metrics",solidHeader = TRUE,width=NULL,
-                         p("Use sliders to set the richness and abundance of two hypothetical communities. Pressing 'Rarefy!' 
-                           will generate species accumulation curves for both communities. This is used to estimate overall  
-                           species richness and compare among sites when the number of individuals and sampling effort differ."),
-                         column(width=2,
-                                h4("Community A:"),br(),br(),
-                                h4("Community B:"),br(),actionButton("rarefy","Rarefy!")),
-                         column(width=3,
-                                tags$style(HTML(".js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {background: purple}")),
-                                tags$style(HTML(".js-irs-1 .irs-single, .js-irs-1 .irs-bar-edge, .js-irs-1 .irs-bar {background: purple}")),
-                                tags$style(HTML(".js-irs-2 .irs-single, .js-irs-2 .irs-bar-edge, .js-irs-2 .irs-bar {background: purple}")),
-                                tags$style(HTML(".js-irs-3 .irs-single, .js-irs-3 .irs-bar-edge, .js-irs-3 .irs-bar {background: purple}")),
-                                tags$style(HTML(".js-irs-4 .irs-single, .js-irs-4 .irs-bar-edge, .js-irs-4 .irs-bar {background: purple}")),
-                                tags$style(HTML(".js-irs-5 .irs-single, .js-irs-5 .irs-bar-edge, .js-irs-5 .irs-bar {background: purple}")),
-                                sliderInput("srA","Species Richness",min=0,max=100,round=TRUE,value=25,width=200,ticks=FALSE),
-                                sliderInput("srB"," ",min=0,max=100,round=TRUE,value=45,width=200,ticks=FALSE)),
-                         column(width=3,
-                                sliderInput("abun_A","Abundance",min=0,max=500,round=TRUE,value=150,width=200,ticks=FALSE),
-                                sliderInput("abun_B"," ",min=0,max=500,round=TRUE,value=250,width=200,ticks=FALSE)),
-                         column(width=3,
-                                sliderInput("eff_A","Sampling Effort",min=0,max=300,round=TRUE,value=90,width=200,ticks=FALSE,post=" samples"),
-                                sliderInput("eff_B"," ",min=0,max=300,round=TRUE,value=90,width=200,ticks=FALSE,post=" samples"))
-                     )
-              ),
               column(width=4,
-                     box(title="What is species richness?", width=NULL,collapsible = TRUE,collapsed=TRUE,
+                     box(title="Measuring species richness", width=NULL,collapsible = TRUE,collapsed=TRUE,
                          p("Species richness is the total number of unique species in a defined area. Measuring species richness is a core
                            objective of ecological research and conservation, and provides a foundation for understanding biodiversity."),
                          p("This application demonstrates how species richness can be compared between two sites that differ in the number of 
                            individuals and sampling effort. DESCRIBE SAC HERE? key words- cumulative sr, ind")),
-                     box(title="How do we compare species richness?", width=NULL,collapsible = TRUE,
-                         p("A site with a greater abundance of individuals, also has a greater probability of including more species.
-                           This makes it difficult to compare species richness among sites that differ in abundance. Species accumulation curves 
-                           are used to compare species richness at a constant abundance."),
-                         p("It can be concluded that the two communities differ if the 95% Confidence Interval around the accumulation curve do not overlap."),br(),
-                         p("Interpolation vs Extrapolation:"),
-                         p("When the communities differ in the number of individuals or sampling effort, comparisons can be made only at a constant value.  
-                           Interpolation compares the communities at the total number of individuals of the smaller community.  Extrapolation projects richness 
-                           at a value greater than the smallest level."),
-                         radioButtons("compare","Compare richness:",choices=c("None selected","Interpolate","Extrapolate"),selected="None selected",inline=TRUE)
-                         ),
-                     box(title="Estimating total species richness",width=NULL, collapsible=TRUE,
-                         p("The amount of sampling within a community heavily influences the number of species and individuals detected. Further, some species
-                           may go undetected or be very rare. Species accumulation curves allow us to assess the adequacy of sampling, and make estimates of 
-                           overall species richness in the face of these challenges."),br(),
-                         p("Once the majority of species have been observed, the curve tapers to a flat line (or asymptote), which suggests the overall species richness.
-                           Using this concept, the species accumulation curve can be used estimate the overall richness of the community, including species not observed.
-                           Various asymptotic estimators have been developed for this purpose."),
-                         p("Check the box below to visualize 'Chao2' estimated richness"),
-                         checkboxInput("chao2","Show estimated species richness (+/- SE)", value=FALSE)
+                     box(title = "Community Metrics",solidHeader = TRUE,width=NULL,
+                         p("Use the sliders to set the species richness of two hypothetical communities. Pressing 'Rarefy!' will generate a species accumulation curve
+                           showing the number of new species observed in the communities (y-axis), with increasing individuals or sampling effort (x-axis)."),
+                         column(width=6,
+                               tags$style(HTML(".js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {background: #CD950C}")),
+                               tags$style(HTML(".js-irs-1 .irs-single, .js-irs-1 .irs-bar-edge, .js-irs-1 .irs-bar {background: #79B791}")),
+                               h4("Community A"),br(),
+                               sliderInput("srA","Species Richness",min=0,max=100,round=TRUE,value=25,width=200,ticks=FALSE),br(),
+                               actionButton("rarefy","Rarefy!"),br()),
+                         column(width=6,
+                                h4("Community B"),br(),
+                                sliderInput("srB","Species Richness",min=0,max=100,round=TRUE,value=45,width=200,ticks=FALSE),br(),br(),br(),br()),
+                         p("The accumulation curve is used to estimate overall species richness and compare among sites when the number of individuals observed and/or sampling effort differs.
+                           Change the number of individuals observed and sampling effort for each community to see how measured species richness is affected."),br(),
+                         column(width=6,
+                                tags$style(HTML(".js-irs-2 .irs-single, .js-irs-2 .irs-bar-edge, .js-irs-2 .irs-bar {background: #CD950C}")),
+                                tags$style(HTML(".js-irs-3 .irs-single, .js-irs-3 .irs-bar-edge, .js-irs-3 .irs-bar {background: #CD950C}")),
+                                tags$style(HTML(".js-irs-4 .irs-single, .js-irs-4 .irs-bar-edge, .js-irs-4 .irs-bar {background: #79B791}")),
+                                tags$style(HTML(".js-irs-5 .irs-single, .js-irs-5 .irs-bar-edge, .js-irs-5 .irs-bar {background: #79B791}")),
+
+                                sliderInput("abun_A","Individuals",min=0,max=300,round=TRUE,value=50,width=200,ticks=FALSE),
+                                sliderInput("eff_A","Sampling Effort",min=0,max=200,round=TRUE,value=50,width=200,ticks=FALSE,post=" samples")),
+                         column(width=6,
+                                sliderInput("abun_B","Individuals",min=0,max=300,round=TRUE,value=50,width=200,ticks=FALSE),
+                                sliderInput("eff_B","Sampling Effort",min=0,max=200,round=TRUE,value=50,width=200,ticks=FALSE,post=" samples")),
+                         p("Or, upload a .'csv' file that contains a sample x species matrix of species abundances for 2 communities. The first column of the data file must
+                           be the grouping variable to indicate the 2 communities. Note: Sliders will not work with uploaded data."),
+                         fileInput("getcsv","Upload data",multiple=FALSE,accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))
                      ),
                      box(title="Evenness",width=NULL,collapsible = TRUE,
-                         p("Detected species richness within a community is also influenced by the relative abundances of individual species, or evenness.
+                         p("Species evenness, or the relative abundance of species, affects the number of species observed by sampling.
                            If all species are present in the community in equal proportion (even), the likelihood of observing each is similar and thus more species
                            may be detected with lower sampling effort. However, if species abundances are highly uneven (a few common species and many rare ones, for example) 
-                           most individuals observed will be of common species rather than rare ones which may go undetected."),
-                         sliderInput("evenness","Set species evenness:",min=0,max=1,value=1,ticks=FALSE,width=200)
-                         )##mouse over sampling effort that defines it- can be the number of smaples/observations to the amount of area surveyed or total time.
+                           most individuals observed will be of common species rather than rare ones which may go undetected. Use the sliders to see how species evenness
+                           implicates the species accumulation curve. (0 = uneven, 1 = all species equally common)"),
+                         column(width=6,
+                                tags$style(HTML(".js-irs-6 .irs-single, .js-irs-6 .irs-bar-edge, .js-irs-6 .irs-bar {background: #CD950C}")),
+                                tags$style(HTML(".js-irs-7 .irs-single, .js-irs-7 .irs-bar-edge, .js-irs-7 .irs-bar {background: #79B791}")),
+                                sliderInput("evennessA","Community A:",min=0,max=1,value=1,ticks=FALSE,width=200)),
+                         column(width=6,
+                                sliderInput("evennessB","Community B:",min=0,max=1,value=1,ticks=FALSE,width=200))
+                     )##mouse over sampling effort that defines it- can be the number of smaples/observations to the amount of area surveyed or total time.
                      #depending on the taxa of interest, the degree of sampling effort and methodlogy will vary
+                         ),
+              column(width=8,
+                     box(title = "Species Accumulation Curve",width=NULL,
+                         plotOutput("rarefaction"),
+                         p("Put words here that explain plot interpretation?")
+                     ),
+                     column(width=6,
+                            box(title="Estimating total species richness",width=NULL, collapsible=TRUE,
+                                p("The amount of sampling within a community heavily influences the number of species and individuals detected. Further, some species
+                           may go undetected or be very rare. Species accumulation curves allow us to assess the adequacy of sampling, and make estimates of 
+                           overall species richness in the face of these challenges."),br(),
+                                p("Once the majority of species have been observed, the curve tapers to a flat line (or asymptote), which suggests the overall species richness.
+                           Using this concept, the species accumulation curve can be used estimate the overall richness of the community, including species not observed.
+                           Various asymptotic estimators have been developed for this purpose."),
+                                p("Check the box below to visualize 'Chao2' estimated richness"),
+                                checkboxInput("chao2","Show estimated species richness (+/- SE)", value=FALSE)
+                            )),
+                     column(width=6,
+                            box(title="How do we compare species richness?", width=NULL,collapsible = TRUE,
+                                p("Richness is inherently sample-size dependent. This means that A site with a greater abundance of individuals or sampling effort, also has a greater probability of including more species.
+                           This makes it difficult to compare species richness among sites that differ in abundance. Comparisons must be done at equivalent sample sizes, with is why we rarey (and extrapolate.interpolate). Species accumulation curves 
+                           are used to compare species richness at a constant abundance."),
+                                p("It can be concluded that the two communities differ if the 95% Confidence Interval around the accumulation curve do not overlap."),br(),
+                                p("Interpolation vs Extrapolation: When the communities differ in the number of individuals or sampling effort, comparisons can be made only at a constant value.  
+                           Interpolation compares the communities at the total number of individuals of the smaller community.  Extrapolation projects richness 
+                           at a value greater than the smallest level."),
+                                radioButtons("compare","Compare richness:",choices=c("None selected","Interpolate","Extrapolate"),selected="None selected",inline=TRUE)
+                            ))
               )
+             
             )
     ),
     tabItem(tabName="lit",
             fluidRow(
               column(width=6,
-                     box(title="Publications",width=NULL,
+                     box(title="Literature",width=NULL,
                          p("Gotelli, N.J., Colwell, R.K. 2010. Biological diversity: frontiers in measurement and assessment. A. E. Magurran and B. J. McGill, eds. pages 39-54"),
                          a("See pdf", href="http://www.uvm.edu/~ngotelli/manuscriptpdfs/Chapter%204.pdf",target="_blank"))),
               column(width=6,
@@ -93,10 +112,15 @@ body <- dashboardBody(
                          h4("iNEXT"),
                          p("Interpolation and Extrapolation for Species Diversity"),
                          a("Documentation",href="https://cran.r-project.org/web/packages/iNEXT/iNEXT.pdf",target="_blank"),
+                         a("Introduction Guide to iNEXT",href="https://cran.r-project.org/web/packages/iNEXT/vignettes/Introduction.html",target="_blank"),
                          h4("EcoSimR"),
+                         p("Gotelli, N.J., Hart, E., and A.M. Ellison. 2015. EcoSimR. Version 0.1.0. http://www.uvm.edu/~ngotelli/EcoSim/EcoSim.html"),
                          p("Used in this app to generate null community matrices"),
                          a("Website",href="http://ecosimr.org/",target="_blank"),br(),
                          a("Documentation",href="https://cran.r-project.org/web/packages/EcoSimR/EcoSimR.pdf",target="_blank"),br(),
+                         h4("rich"),
+                         p("An R package to analyze species richness"),
+                         a("Introduction to rich",href=""),
                          h4("This app:"),
                          p("R script that runs the same analyses:"),br(),
                          a(href="",target="_blank"),br(),
@@ -104,7 +128,11 @@ body <- dashboardBody(
                          )
                      )
             )
-    )
+    ),
+    tabItem(tabName="exercises",
+            p("content here")),
+    tabItem(tabName="example",
+            p("Content here"))
     
   )
 )
