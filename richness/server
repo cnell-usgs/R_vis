@@ -1,3 +1,23 @@
+###shiny template server
+
+library(shiny)
+library(ggplot2)
+library(vegan)
+library(EcoSimR)
+library(dplyr)
+library(readr)
+library(rich)
+
+source_url("https://raw.githubusercontent.com/collnell/R_vis/master/theme_mooney.R")#ggplot theme
+birds<-read.csv("https://raw.githubusercontent.com/collnell/R_vis/master/richness/example/birds.csv")
+mono<-filter(birds,DIVERSITY=="M")
+poly<-filter(birds, DIVERSITY=="P")
+cols<-names(birds)
+sps<-cols[-c(1:2)]
+monom<-mono[,sps]
+polym<-poly[,sps]
+
+
 shinyServer(function(input,output){
   
   
@@ -27,8 +47,10 @@ shinyServer(function(input,output){
     )
     if(is.null(input$getcsv)) {
       
-      sgA<-specaccum(t(test.matA()$m),method="rarefaction") ##run rarefaction using vegan
-      sgB<-specaccum(t(test.matB()$m),method="rarefaction") ##
+      sgA<-specaccum(t(test.matA()$m),method="rarefaction",conditioned="TRUE") ##run rarefaction using vegan
+      sgB<-specaccum(t(test.matB()$m),method="rarefaction",conditioned="TRUE",gamma="chao") ##
+      
+      
     } else{
       inFile<-input$getcsv
       temp.df<-read.csv(inFile$datapath)##needs to sites x species matrix, with 1st col as grouping var
@@ -38,8 +60,8 @@ shinyServer(function(input,output){
       adrun<-adf[-1]
       bdf<-X[[2]]
       bdrun<-bdf[-1]
-      sgA<-specaccum(adrun,method="rarefaction")
-      sgB<-specaccum(bdrun,method="rarefaction")
+      sgA<-specaccum(adrun,method="rarefaction",conditioned="TRUE")
+      sgB<-specaccum(bdrun,method="rarefaction",conditioned="TRUE")
       
     }
     
@@ -61,12 +83,18 @@ shinyServer(function(input,output){
       SRestB<-specpool(t(test.matB()$m))
       Aest<-SRestA$chao
       Best<-SRestB$chao
-
-    
-    rar.plot<-ggplot(data=plot.df,aes(x=ind,y=rich,color=Community))+geom_line(size=2)+##need to add CI shaded around line
-      labs(x="Individuals",y="Species Richness")+##make smooth line?
+    if (input$xvar == "ind"){
+      xlabel<-("Individuals")
+      plot.df$xvary<-plot.df$ind
+    } else {
+      xlabel<-("Samples")
+      plot.df$xvary<-plot.df$site
+    }
+      
+    rar.plot<-ggplot(data=plot.df,aes(x=xvary,y=rich,color=Community))+geom_line(size=2)+##need to add CI shaded around line
+      labs(x=xlabel,y="Species Richness")+##make smooth line?
       theme_mooney(legend.location="bottom")+
-      geom_ribbon(aes(x=ind,ymin=rich-sd,ymax=rich+sd,fill=Community),alpha=.4,inherit.aes = FALSE)+##incorrect way to plot sd/CI
+      geom_ribbon(aes(x=xvary,ymin=rich-(sd*1.96),ymax=rich+(sd*1.96),fill=Community),alpha=.4,inherit.aes = FALSE)+##incorrect way to plot sd/CI
       scale_color_manual(values=c("darkgoldenrod3","#79B791"))+scale_fill_manual(values=c("darkgoldenrod3","#79B791"))
     rar.plot
     
@@ -81,9 +109,59 @@ shinyServer(function(input,output){
     } else {
       rar.plot
     }
+  })
+  
     
+    
+    ##working on the exmaple tab
+  output$divplots<-renderPlot({
+    mono.rar<-specaccum(monom,method="rarefaction")
+    poly.rar<-specaccum(polym,method="rarefaction")
+    mono.df<-data.frame(ind = mono.rar$individuals, #create dataframe to plot 
+                        rich =mono.rar$richness,
+                        site=mono.rar$sites,
+                        sd=mono.rar$sd)
+    poly.df<-data.frame(ind = poly.rar$individuals, #create dataframe to plot 
+                        rich =poly.rar$richness,
+                        site=poly.rar$sites,
+                        sd=poly.rar$sd)
+    mono.df$Community<-rep("M",length(mono.df$ind))
+    poly.df$Community<-rep("P",length(poly.df$ind))
+    div.df<-rbind(mono.df,poly.df)
+    
+    m.est<-specpool(monom)  #estimate species richness
+    p.est<-specpool(polym)
+    M.est<-m.est$chao
+    P.est<-p.est$chao
+    
+    if (input$xvar_ex == "ind"){
+      xlabel<-("Individuals")
+      div.df$xvary<-div.df$ind
+    } else {
+      xlabel<-("Samples")
+      div.df$xvary<-div.df$site
+    }
+    
+    
+    div.plot<-ggplot(data=div.df,aes(x=xvary,y=rich,color=Community))+geom_line(size=2)+
+      labs(x=xlabel,y="Species Richness")+
+      theme_mooney(legend.location="bottom")+
+      scale_color_manual(values=c("darkgoldenrod3","#79B791"))+scale_fill_manual(values=c("darkgoldenrod3","#79B791"))
+    div.plot
+    
+    if (input$chao == TRUE) {
+      chao.rar.div<-div.plot+geom_line(y=M.est,lty="dashed",size=1.5,color="darkgoldenrod3")+
+        geom_line(y=P.est,lty="dotted",size=1.5,color="#79B791")+
+        geom_ribbon(aes(x=xvary,ymin=M.est-m.est$chao.se,ymax=M.est+m.est$chao.se),fill="darkgoldenrod3",alpha=.2,inherit.aes=FALSE)+
+        geom_ribbon(aes(x=xvary,ymin=P.est-p.est$chao.se,ymax=P.est+p.est$chao.se),fill="#79B791",alpha=.2,inherit.aes=FALSE)+
+        geom_text(aes(x=0, y=M.est, label=round(M.est,2)),color="black",size=5)+
+        geom_text(aes(x=0, y=P.est, label=round(P.est,2)),color="black",size=5)#labels are blurry
+      chao.rar.div
+    } else {
+      div.plot
+    }
+  
     
   })
   
-})
 })
