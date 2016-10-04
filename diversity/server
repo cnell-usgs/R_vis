@@ -1,0 +1,89 @@
+library(shiny)
+library(ggplot2)
+library(DT)
+library(dplyr)
+library(readr)
+library(vegan)
+library(RCurl)##source_url
+library(reshape2)
+
+
+source_url("https://raw.githubusercontent.com/collnell/R_vis/master/theme_mooney.R")#ggplot theme
+
+
+shinyServer(function(input,output){
+  sps<-c("sp1","sp2","sp3","sp4","sp5","sp6")
+
+  
+  values<-reactiveValues(abun.df = data.frame(Community = as.factor(c("A","B")),
+                                              sp1 = as.numeric(c(1, 1)),
+                                              sp2 = as.numeric(c(1, 1)),
+                                              sp3 = as.numeric(c(1, 1)),
+                                              sp4 = as.numeric(c(1, 1)),
+                                              sp5 = as.numeric(c(1, 1)),
+                                              sp6 = as.numeric(c(1, 1)),
+                                              H = c(1.79,1.79),
+                                              D = c(.83,.83),
+                                              P = c(1,1),
+                                              S = c(6,6),
+                                              Abundance = c(6,6)),
+                         commA_shan =1.79,
+                         commB_shan =1.79,
+                         commA_even = 1,
+                         commB_even =1,
+                         commA_simp = .83,
+                         commB_simp = .83
+                         )
+  
+  observeEvent(input$shann, {
+    abun.df = data.frame(Community = as.factor(c("A","B")),
+                         sp1 = as.numeric(c(input$sp1_a, input$sp1_b)),
+                         sp2 = as.numeric(c(input$sp2_a, input$sp2_b)),
+                         sp3 = as.numeric(c(input$sp3_a, input$sp3_b)),
+                         sp4 = as.numeric(c(input$sp4_a, input$sp4_b)),
+                         sp5 = as.numeric(c(input$sp5_a, input$sp5_b)),
+                         sp6 = as.numeric(c(input$sp6_a, input$sp6_b)))
+    abun.df$Abundance<-rowSums(abun.df[,sps])
+    abun.df$H<-diversity(abun.df[,sps])
+    abun.df$D<-diversity(abun.df[,sps],index="simpson")
+    abun.df$P<-abun.df$H/log(specnumber(abun.df[,sps]))
+    abun.df$S<-rowSums(abun.df[,sps] > 0)
+    
+    values$commA_shan<-abun.df$H[[1]]
+    values$commB_shan<-abun.df$H[[2]]
+    values$commA_even<-abun.df$P[[1]]
+    values$commB_even<-abun.df$P[[2]]
+    values$commA_simp<-abun.df$D[[1]]
+    values$commB_simp<-abun.df$D[[2]]
+    values$commA_sr<-abun.df$S[[1]]
+    values$commA_sr<-abun.df$S[[2]]
+    
+    values$abun.df<-abun.df
+    
+  })
+  output$shan_A<-renderText({paste0("Community A: ",round(values$commA_shan,2))})
+  output$shan_B<-renderText({paste0("Community B: ",round(values$commB_shan,2))})
+  output$even_A<-renderText({paste0("Community A: ",round(values$commA_even,2))})
+  output$even_B<-renderText({paste0("Community B: ",round(values$commB_even,2))})
+  output$simp_A<-renderText({paste0("Community A: ",round(values$commA_simp,2))})
+  output$simp_B<-renderText({paste0("Community B: ",round(values$commB_simp,2))})
+  
+  output$plot1<-renderPlot({
+    
+    dataf<-melt(values$abun.df, id.vars = c("Community","H","P","D","S","Abundance"), measure.vars = sps, variable.name="Species")
+    
+    bp<-ggplot(dataf,aes(x=Community,y=value,color=Species,fill=Species))+geom_bar(position="fill",stat="identity")+
+      theme_mooney(legend.location="top")+theme(axis.title.y=element_blank(), axis.ticks.y=element_blank(),axis.line=element_blank())+
+      labs(y="Proportion of Community",x="Community")+coord_flip()+guides(color=guide_legend(nrow=1))
+    bp
+  })
+ 
+  output$eventable<-renderDataTable( values$abun.df%>%
+                                       datatable(rownames=FALSE, options= list(dom='t'))
+                                     %>%formatRound(c('H','P','D'),digits=2))
+                         
+                         
+  
+ 
+  
+})
