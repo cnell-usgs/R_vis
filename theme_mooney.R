@@ -20,7 +20,7 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend = "bott
     axis.ticks.length =  unit(0.15, "cm"),
     
     legend.background =  element_rect(colour = NA),
-    legend.margin =      margin(0.2, unit="cm"),
+    legend.margin =      margin(0.2, 0.2, 0.2, 0.2),
     legend.key =         element_blank(),
     legend.key.size =    unit(1.2, "lines"),
     legend.key.height =  NULL,
