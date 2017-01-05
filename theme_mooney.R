@@ -1,4 +1,4 @@
-theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.location = "right"){
+theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend = "bottom"){
   theme(
     line =               element_line(colour = "black", size = 1, linetype = 1, 
                                       lineend = "round"),
@@ -29,7 +29,7 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.locatio
     legend.text.align =  NULL,
     legend.title =       element_text(size = rel(0.8), face = "bold", hjust = 0),
     legend.title.align = NULL,
-    legend.position =    legend.location,
+    legend.position =    legend,
     legend.direction =   NULL,
     legend.justification = "center",
     legend.box =         NULL,
@@ -38,7 +38,7 @@ theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend.locatio
     panel.border =       element_blank(),
     panel.grid.major =   element_blank(),
     panel.grid.minor =   element_blank(),
-    panel.margin =       unit(0.25, "lines"),
+    panel.spacing =      unit(0.25, "lines"),
     
     strip.background =   element_rect(fill = "black", size = 0.5),
     strip.text.x =       element_text(),
