@@ -1,56 +1,45 @@
-theme_mooney<-function(base_size = 18, base_family = "Helvetica", legend = "bottom"){
-  theme(
-    line =               element_line(colour = "black", size = 1, linetype = 1, 
-                                      lineend = "round"),
-    rect =               element_rect(fill = "white", colour = "white", size = 0.5, linetype = 1),
-    text =               element_text(family = base_family, face = "plain", colour = "black",
-                                      size = base_size, hjust = 0.5, vjust = 0.5, angle = 0,
-                                      lineheight = 0.9, margin=margin(), debug=FALSE),
-    axis.text =          element_text(size = rel(0.8), colour = "black"),
-    strip.text =         element_text(size = rel(0.8)),
-    
-    axis.line.x =         element_line(color = "black", size=1),
-    axis.line.y =         element_line(color = "black", size=1),
-    axis.text.x =        element_text(face = "plain", margin=margin(2,0,0,0)),
-    axis.text.y =        element_text(face = "plain", margin=margin(0,2,0,0)),
-    axis.ticks =         element_line(colour = "black", size= .6),
-    axis.title =         element_text(colour = "black", face = "bold"),
-    axis.title.x =       element_text(margin=margin(10,0,0,0)),
-    axis.title.y =       element_text(angle = 90, margin=margin(0,10,0,0)),
-    axis.ticks.length =  unit(0.15, "cm"),
-    
-    legend.background =  element_rect(colour = NA),
-    legend.margin =      margin(0.2, 0.2, 0.2, 0.2),
-    legend.key =         element_blank(),
-    legend.key.size =    unit(1.2, "lines"),
-    legend.key.height =  NULL,
-    legend.key.width =   NULL,
-    legend.text =        element_text(size = rel(1)),
-    legend.text.align =  NULL,
-    legend.title =       element_text(size = rel(1), face = "bold", hjust = 0),
-    legend.title.align = NULL,
-    legend.position =    legend,
-    legend.direction =   NULL,
-    legend.justification = "center",
-    legend.box =         NULL,
-    
-    panel.background =   element_rect(fill = "white", colour = NA),
-    panel.border =       element_blank(),
-    panel.grid.major =   element_blank(),
-    panel.grid.minor =   element_blank(),
-    panel.spacing =      unit(0.25, "lines"),
-    
-    strip.background =   element_rect(fill = "black", size = 0.5),
-    strip.text.x =       element_text(),
-    strip.text.y =       element_text(angle = -90),
-    
-    plot.background =    element_rect(colour = "white"),
-    plot.title =         element_text(size = rel(1.2)),
-    plot.margin =        unit(c(1, 1, 1, 1), "lines"),
-    
-    complete = TRUE
-  )
+##ggplot theme 
+theme_mooney <- function(base_size=16) {
+  library(grid)
+  library(ggthemes)
+  (theme_foundation(base_size=base_size, base_family='sans')
+    + theme(plot.title = element_text(face = "bold",
+                                      size = rel(1.2), hjust = 0.5),
+            text = element_text(),
+            panel.background = element_rect(colour = NA),
+            plot.background = element_rect(colour = NA),
+            panel.border = element_rect(colour = NA),
+            axis.title = element_text(face = "bold",size = rel(1)),
+            axis.title.y = element_text(angle=90,vjust =2),
+            axis.title.x = element_text(vjust = -0.2),
+            axis.text = element_text(), 
+            axis.line = element_line(colour="black"),
+            axis.ticks = element_line(),
+            panel.grid.major = element_line(colour="#f0f0f0"),
+            panel.grid.minor = element_blank(),
+            legend.key = element_rect(colour = NA),
+            legend.position = "bottom",
+            legend.direction = "horizontal",
+            legend.key.size= unit(0.2, "cm"),
+            legend.margin = margin(0,0,0,0, unit='pt'),
+            legend.title = element_text(face="italic"),
+            plot.margin=unit(c(10,5,5,5),"mm"),
+            strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+            strip.text = element_text(face="bold")
+    ))
+  
 }
 
-pal_nell<-c("#25B886","#38149C","#FFB917","#6e0A4C","#DB3C1D","#CBA1F0","#85EB00","#1A6E87","#91FFCF")
-pal_pastel_5<-c("#938FC9","#8E5572","#C1EDCC","#F&C1BB","#443850")
+scale_fill_pretty <- function(...){
+  library(scales)
+  discrete_scale("fill","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+  
+}
+
+scale_color_pretty <- function(...){
+  library(scales)
+  discrete_scale("colour","Publication",manual_pal(values = c("#386cb0","#fdb462","#7fc97f","#ef3b2c","#662506","#a6cee3","#fb9a99","#984ea3","#ffff33")), ...)
+  
+}
+
+
